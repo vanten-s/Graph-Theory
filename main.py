@@ -2,6 +2,7 @@
 import random
 import os
 import json
+import time
 
 node_format = \
 """    {
@@ -74,12 +75,13 @@ with open( "people.json", "r" ) as f:
         Node( node["connections"], node["name"], node["uid"] )
 
 run = True
-print( "Commands:" )
-print( "A: add"    )
-print( "P: print"  )
-print( "Q: quit"   )
-print( "S: save"   )
-print( "L: list"   )
+print( "Commands:"     )
+print( "A: add"        )
+print( "P: print"      )
+print( "Q: quit"       )
+print( "S: save"       )
+print( "L: list"       )
+print( "C: connection" )
 
 while run:
 
@@ -108,6 +110,7 @@ while run:
 
             print( ", ".join( [match.name for match in matches] ) )
 
+        print( )
         print( "--- INFORMATION ---" )
         print( "name:", match.name )
         print( "connections:", ", ".join( [ connection.name for connection in match.get_connections( ) ] ) )
@@ -129,17 +132,17 @@ while run:
         adding = True
         while adding:
             try:
-                os.system( "clear" )
                 search = input( "enter search > " )
                 matches = Node.search( search )
                 if len( matches ) == 1:
                     print( "Added", matches[ 0 ].name )
                     connections.append( matches[ 0 ].uid )
-                    input( )
+                    time.sleep( 1 )
+
 
             except KeyboardInterrupt:
                 adding = False
-
+                print( )
 
         Node( connections, name )
         print( "Added Node" )
@@ -150,6 +153,37 @@ while run:
             print( f"{uid} : {Node.nodes[uid]}" )
 
         continue
+
+    if command == "C":
+        print( "--- ADD CONNECTION ---" )
+
+        searching = True
+        while searching:
+            search = input( "person one > " )
+            matches = Node.search( search )
+            if len( matches ) == 1:
+                print( "Person 1 Selected", matches[ 0 ].name )
+                person1 = matches[ 0 ]
+                searching = False
+                break
+
+            print( f"{len(matches)} matches found" )
+
+        searching = True
+        while searching:
+            search = input( "person two > " )
+            matches = Node.search( search )
+            if len( matches ) == 1:
+                print( "Person 2 Selected", matches[ 0 ].name )
+                person2 = matches[ 0 ]
+                searching = False
+                break
+
+            print( f"{len(matches)} matches found" )
+
+        person1.connections.add( person2.uid )
+        person2.connections.add( person1.uid )
+
 
 
 

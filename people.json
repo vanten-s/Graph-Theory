@@ -1,0 +1,42 @@
+[
+    {
+        "connections": [2081106243, 1034602157, 526621136, 3718490937, 2952461051],
+        "name":        "Nils Åkerlund",
+        "uid":         1554961832
+    },
+    {
+        "connections": [1554961832, 3708269173, 2031755638, 3718490937, 2952461051],
+        "name":        "Svante Spännar",
+        "uid":         2081106243
+    },
+    {
+        "connections": [1554961832, 2081106243, 2031755638, 526621136],
+        "name":        "Elijah Garpebring",
+        "uid":         2952461051
+    },
+    {
+        "connections": [1554961832, 2952461051],
+        "name":        "Knut Ahlström",
+        "uid":         526621136
+    },
+    {
+        "connections": [1554961832],
+        "name":        "David Björkman",
+        "uid":         1034602157
+    },
+    {
+        "connections": [1554961832, 2081106243],
+        "name":        "Lilith Sturve",
+        "uid":         3718490937
+    },
+    {
+        "connections": [2081106243],
+        "name":        "Kerstin Spännar",
+        "uid":         3708269173
+    },
+    {
+        "connections": [2081106243, 2952461051],
+        "name":        "Laura Lindström",
+        "uid":         2031755638
+    }
+]
