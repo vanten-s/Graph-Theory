@@ -45,8 +45,18 @@ fn main() {
     for object in 0..length {
         let person_as_object = &json_array[object];
 
-        let name = person_as_object.get("name").unwrap().as_str().unwrap().to_owned();
-        let connections = person_as_object.get("connections").unwrap().as_array().unwrap().to_owned();
+        let name = person_as_object
+            .get("name")
+            .unwrap()
+            .as_str()
+            .unwrap()
+            .to_owned();
+        let connections = person_as_object
+            .get("connections")
+            .unwrap()
+            .as_array()
+            .unwrap()
+            .to_owned();
         let uid = person_as_object.get("uid").unwrap().as_u64().unwrap();
 
         let person = Person {
@@ -55,7 +65,7 @@ fn main() {
             uid: uid,
         };
 
-        people.push( person );
+        people.push(person);
     }
 
     dbg!(people);
