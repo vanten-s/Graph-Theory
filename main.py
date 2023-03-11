@@ -11,6 +11,12 @@ node_format = \
         "uid":         {uid}
     }"""
 
+node_format2 = \
+        """    "{uid}": {
+        "connections": {connections},
+        "name":        {name},
+    },"""
+
 class Node:
 
     nodes = { }
@@ -41,19 +47,24 @@ class Node:
         return connections
 
     def get_json( self ):
-        return node_format \
-        .replace( "{connections}", str( list( self.connections ) ) ) \
-        .replace( "{name}", '"' + self.name + '"' ) \
-        .replace( "{uid}", str( self.uid ) )
-        # this is bad, like really really bad but it just converts to json
+        return {"connections": list(self.connections), "name": self.name, "uid": self.uid}
+
 
     def save( ):
+        format1_array = [ node.get_json( ) for node in Node.nodes.values( ) ]
+        format2_dict  = Node.save_format2( )
 
-        json_array = [ node.get_json( ) for node in Node.nodes.values( ) ]
+        finished_array = [format1_array, format2_dict]
 
-        json = "[\n" + ",\n".join( json_array ) + "\n]"
+        return json.dumps( finished_array, ensure_ascii=False, indent=4 )
 
-        return json
+    def save_format2( ):
+        format2_dict = dict()
+
+        for node in Node.nodes.values( ):
+            format2_dict[str(node.uid)] = {"name": node.name, "connections": list(node.connections)}
+
+        return format2_dict
 
     def __str__( self ):
         return self.name
@@ -71,7 +82,7 @@ class Node:
         return matches
 
 with open( "people.json", "r" ) as f:
-    for node in json.load( f ):
+    for node in json.load( f )[0]:
         Node( node["connections"], node["name"], node["uid"] )
 
 run = True
@@ -183,6 +194,8 @@ while run:
 
         person1.connections.add( person2.uid )
         person2.connections.add( person1.uid )
+
+print( Node.save_format2() )
 
 
 

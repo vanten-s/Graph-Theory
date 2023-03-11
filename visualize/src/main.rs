@@ -1,10 +1,12 @@
 use catppuccin::Flavour::Mocha;
 use rand::Rng;
 use raylib::prelude::*;
+use std::collections::HashMap;
 use std::fs;
 use std::io;
 
-#[derive(Debug)]
+#[derive(Clone)]
+#[allow(dead_code)]
 struct Person {
     name: String,
     connections: Vec<serde_json::Value>,
@@ -12,6 +14,8 @@ struct Person {
     x: u32,
     y: u32,
 }
+
+static TEXT_SIZE: i32 = 12;
 
 fn transform(x: u32, y: u32, width: i32, height: i32) -> (i32, i32) {
     let width_mul = (width as f32) / 100.0;
@@ -43,13 +47,15 @@ fn load() -> serde_json::Value {
     serde_json::from_reader(file).expect("Error Reading File Or Wrong Format!")
 }
 
+#[allow(unused_labels)]
 fn main() {
     // Get every person
     let json_value = load();
-    let json_array = json_value.as_array().unwrap();
+    let json_array = json_value.get(0).unwrap().as_array().unwrap();
     let length = json_array.len();
 
     let mut people: Vec<Person> = Vec::new();
+    let mut people_hashmap: HashMap<u64, Person> = HashMap::new();
 
     for object in 0..length {
         let person_as_object = &json_array[object];
@@ -78,45 +84,64 @@ fn main() {
             y: rng.gen_range(0..100),
         };
 
-        people.push(person);
+        people.push(person.clone());
+        people_hashmap.insert(uid, person);
     }
 
     // Define colors
     let base = Color::from_hex(&Mocha.base().hex()).unwrap();
     let sky = Color::from_hex(&Mocha.sky().hex()).unwrap();
     let green = Color::from_hex(&Mocha.green().hex()).unwrap();
+    let red = Color::from_hex(&Mocha.red().hex()).unwrap();
 
     // Initialize
     let (mut rl, thread) = raylib::init()
         .size(640, 480)
         .title("Hello World!")
         .resizable()
+        .msaa_4x()
         .build();
 
+    let mut zoom_level: i32 = 10000;
+
     // Mainloop
-    while !rl.window_should_close() {
+    'mainloop: while !rl.window_should_close() {
+        if rl.is_key_down(KeyboardKey::KEY_DOWN) {
+            zoom_level -= 1;
+        } else if rl.is_key_down(KeyboardKey::KEY_UP) {
+            zoom_level += 1;
+        }
+
         let width = &rl.get_screen_width();
         let height = &rl.get_screen_height();
 
         let mut d = rl.begin_drawing(&thread);
         d.clear_background(base);
 
-        for person in &people {
+        'connections: for person in &people {
             let (x, y) = transform(person.x, person.y, *width, *height);
 
-            d.draw_circle(x, y, 10.0, sky);
-
-            // Terrible performace, can be hugely improved using hasmaps for data structure
             for connection in &person.connections {
-                for possible_connected_person in &people {
-                    if possible_connected_person.uid == connection.as_u64().unwrap() {
-                        let connected_person = possible_connected_person;
-                        let (connected_x, connected_y) =
-                            transform(connected_person.x, connected_person.y, *width, *height);
-                        d.draw_line(x, y, connected_x, connected_y, green);
-                    }
-                }
+                let connected_person = people_hashmap.get(&connection.as_u64().unwrap()).unwrap();
+                let (connected_x, connected_y) =
+                    transform(connected_person.x, connected_person.y, *width, *height);
+                d.draw_line(x, y, connected_x, connected_y, green);
             }
+        }
+
+        'circles: for person in &people {
+            let (x, y) = transform(person.x, person.y, *width, *height);
+
+            d.draw_circle(x, y, (width / 100) as f32, sky);
+        }
+
+        'names: for person in &people {
+            let (x, y) = transform(person.x, person.y, *width, *height);
+
+            let text_width = raylib::text::measure_text(&person.name, TEXT_SIZE);
+            let text_offset = (text_width / 2) as i32;
+
+            d.draw_text(&person.name, x - text_offset, y, TEXT_SIZE, red);
         }
     }
 }
