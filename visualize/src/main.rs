@@ -1,4 +1,5 @@
 use catppuccin::Flavour::Mocha;
+use rand::Rng;
 use raylib::prelude::*;
 use std::fs;
 use std::io;
@@ -8,6 +9,18 @@ struct Person {
     name: String,
     connections: Vec<serde_json::Value>,
     uid: u64,
+    x: u32,
+    y: u32,
+}
+
+fn transform(x: u32, y: u32, width: i32, height: i32) -> (i32, i32) {
+    let width_mul = (width as f32) / 100.0;
+    let height_mul = (height as f32) / 100.0;
+
+    let transformed_x = (x as i32) * (width_mul as i32);
+    let transformed_y = (y as i32) * (height_mul as i32);
+
+    return (transformed_x, transformed_y);
 }
 
 fn load() -> serde_json::Value {
@@ -31,10 +44,6 @@ fn load() -> serde_json::Value {
 }
 
 fn main() {
-    // Define colors
-    let base = Color::from_hex(&Mocha.base().hex()).unwrap();
-    let sky = Color::from_hex(&Mocha.sky().hex()).unwrap();
-
     // Get every person
     let json_value = load();
     let json_array = json_value.as_array().unwrap();
@@ -59,16 +68,23 @@ fn main() {
             .to_owned();
         let uid = person_as_object.get("uid").unwrap().as_u64().unwrap();
 
+        let mut rng = rand::thread_rng();
+
         let person = Person {
-            name: name,
-            connections: connections,
-            uid: uid,
+            name,
+            connections,
+            uid,
+            x: rng.gen_range(0..100),
+            y: rng.gen_range(0..100),
         };
 
         people.push(person);
     }
 
-    dbg!(people);
+    // Define colors
+    let base = Color::from_hex(&Mocha.base().hex()).unwrap();
+    let sky = Color::from_hex(&Mocha.sky().hex()).unwrap();
+    let green = Color::from_hex(&Mocha.green().hex()).unwrap();
 
     // Initialize
     let (mut rl, thread) = raylib::init()
@@ -79,9 +95,28 @@ fn main() {
 
     // Mainloop
     while !rl.window_should_close() {
-        let mut d = rl.begin_drawing(&thread);
+        let width = &rl.get_screen_width();
+        let height = &rl.get_screen_height();
 
+        let mut d = rl.begin_drawing(&thread);
         d.clear_background(base);
-        d.draw_rectangle(0, 0, 30, 30, sky);
+
+        for person in &people {
+            let (x, y) = transform(person.x, person.y, *width, *height);
+
+            d.draw_circle(x, y, 10.0, sky);
+
+            // Terrible performace, can be hugely improved using hasmaps for data structure
+            for connection in &person.connections {
+                for possible_connected_person in &people {
+                    if possible_connected_person.uid == connection.as_u64().unwrap() {
+                        let connected_person = possible_connected_person;
+                        let (connected_x, connected_y) =
+                            transform(connected_person.x, connected_person.y, *width, *height);
+                        d.draw_line(x, y, connected_x, connected_y, green);
+                    }
+                }
+            }
+        }
     }
 }

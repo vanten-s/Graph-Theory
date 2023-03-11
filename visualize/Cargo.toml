@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 catppuccin = "1.2.1"
 serde_json = "1.0.94"
+rand = "0.8.5"
 
 [dependencies.raylib]
 version = "4.5.0"
