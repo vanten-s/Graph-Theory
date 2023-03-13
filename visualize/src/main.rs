@@ -48,8 +48,8 @@ fn timestep(people: Vec<Person>, hasmap: HashMap<u64, Person>) -> Vec<Person> {
             println!("{}", direction_y);
             println!("\n");
 
-            person_new.x += 5.0 * direction_x / distance;
-            person_new.y += 5.0 * direction_y / distance;
+            person_new.x += 15.0 * direction_x / distance;
+            person_new.y += 15.0 * direction_y / distance;
             
         }
 
@@ -62,12 +62,13 @@ fn timestep(people: Vec<Person>, hasmap: HashMap<u64, Person>) -> Vec<Person> {
             let direction_y = (person.y - other_person.y) / distance.sqrt();
             println!("{}", person.name);
             println!("{}", other_person.name);
-            println!("{}", direction_x);
-            println!("{}", direction_y);
+            println!("Dir x: {}", direction_x);
+            println!("Dir y: {}", direction_y);
+            println!("Distance: {}", distance.sqrt());
             println!("\n");
 
-            person_new.x -= 30.0 * direction_x / (distance.sqrt() - 500.0).abs();
-            person_new.y -= 30.0 * direction_y / (distance.sqrt() - 500.0).abs();
+            person_new.x -= 0.001 * direction_x * (distance.sqrt() - 30.0);
+            person_new.y -= 0.001 * direction_y * (distance.sqrt() - 30.0);
         }
 
         people_return_array.push(person_new);
